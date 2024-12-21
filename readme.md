@@ -15,3 +15,5 @@ don't have friends? no problem, activate bots by appending `?lonely`
 ## disclaimer
 
 this is a very minimal scrape and remix of the extremely cool https://thelongestyard.link/ who's source can be found [here](https://github.com/jdarpinian/ioq3) and [here](https://github.com/jdarpinian/HumbleNet)
+
+inspired by how i've previously used the now-abandoned [quake-kube](https://github.com/criticalstack/quake-kube)
