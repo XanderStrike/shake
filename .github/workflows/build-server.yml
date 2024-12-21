@@ -1,9 +1,11 @@
-name: Build and Push Docker Image
+name: Build and Push Server
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'server/**'
 
 jobs:
   build-and-push:
