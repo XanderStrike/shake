@@ -16,9 +16,9 @@
     <div id="move"></div>
     <div id="look"></div>
 </div>
-<div id="ui">
+<!-- <div id="ui">
     <div id=multiplayerMessage class="button selected" style=display:none title="COPY MULTIPLAYER URL">COPY MULTIPLAYER URL</div>
-</div>
+</div> -->
 <div id=progress><div id=done></div></div>
 </div>
 </body>
@@ -246,18 +246,18 @@ if (query.has('multiplayer')) {
 }
 
 let multiplayer = !!server;
-if (multiplayer) multiplayerMessage.style.display = 'block';
-multiplayerMessage.addEventListener('click', (e) => {
-    navigator.clipboard.writeText(window.location.href);
-    multiplayerMessage.innerText = `COPIED! SEND TO YOUR FRIENDS!`;
-    multiplayerMessage.title = multiplayerMessage.innerText;
-    setTimeout(() => {
-        multiplayerMessage.innerText = `COPY MULTIPLAYER URL`;
-        multiplayerMessage.title = multiplayerMessage.innerText;
-    }, 5000);
-    e.preventDefault();
-    e.stopPropagation();
-}, { capture: true} );
+// if (multiplayer) multiplayerMessage.style.display = 'block';
+// multiplayerMessage.addEventListener('click', (e) => {
+//     navigator.clipboard.writeText(window.location.href);
+//     multiplayerMessage.innerText = `COPIED! SEND TO YOUR FRIENDS!`;
+//     multiplayerMessage.title = multiplayerMessage.innerText;
+//     setTimeout(() => {
+//         multiplayerMessage.innerText = `COPY MULTIPLAYER URL`;
+//         multiplayerMessage.title = multiplayerMessage.innerText;
+//     }, 5000);
+//     e.preventDefault();
+//     e.stopPropagation();
+// }, { capture: true} );
 
 let decideConnectToServer;
 let connectToServer = new Promise(r=>decideConnectToServer=r);
@@ -375,12 +375,12 @@ import(`${buildPath}/ioquake3_opengl2.wasm32.js`).then(async (ioquake3)=>{
                     module.arguments.push(...`
                         +set net_peer_server "${peerServerWebSocket}"
                         +set net_server_name "${server}"
-                        +map q3dm7
+                        +map q3dm17
                         `.trim().split(/\s+/));
                 }
             } else {
                 module.arguments.push(...`
-                    +map q3dm7
+                    +map q3dm17
                     +addbot sarge ${botSkill}
                     +addbot daemia ${botSkill}
                     +addbot major ${botSkill}
