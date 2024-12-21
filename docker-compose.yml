@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  shake-client:
+    image: shake-client
+    container_name: shake-client
+    ports:
+      - "8081:80"
+
+  shake-server:
+    image: shake-server
+    container_name: shake-server
+    ports:
+      - "8080:8080"
