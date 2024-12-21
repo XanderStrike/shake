@@ -1,5 +1,5 @@
 # Build Stage
-FROM ubuntu:20.04 AS build
+FROM ubuntu:24.04 AS build
 
 # Don't ask for help configuring stuff
 ARG DEBIAN_FRONTEND=noninteractive
@@ -25,7 +25,6 @@ RUN git submodule update --init --recursive
 # Build the peer-server binary
 RUN cmake .
 RUN make peer-server
-
 
 # Run Stage
 FROM ubuntu:24.04

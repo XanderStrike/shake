@@ -25,12 +25,14 @@
 <script src="compression-streams-polyfill.0.1.7.js"></script>
 <script type='module'>
 
-// let peerServer = 's://peer-server.thelongestyard.link';
-// if (location.hostname === 'localhost') {
-//     peerServer = '://localhost:8080';
-// }
+let peerServer;
+if (window.location.host.includes(':')) {
+    peerServer = `://${window.location.hostname}:8080`;
+} else {
+    peerServer = 's://peer-server.thelongestyard.link';
+    console.warn('No local peer server found! Falling back to the longest yard server');
+}
 
-let peerServer = "://inspiron.local:8080"
 const peerServerWebSocket = `ws${peerServer}`;
 const peerServerHTTP = `http${peerServer}`;
 
