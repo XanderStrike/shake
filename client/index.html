@@ -237,17 +237,18 @@ if (window.matchMedia('(pointer: coarse)').matches) {
 
 const query = new URLSearchParams(window.location.search);
 let server = query.get('server');
-if (query.has('multiplayer')) {
-    if (!server) server = username;
+if (!query.has('lonely')) {
+    if (!server) server = "default";
     let newUrl = new URL(window.location);
-    newUrl.searchParams.delete('multiplayer');
-    newUrl.searchParams.set('server', server);
-    history.replaceState(null, '', newUrl);
+    if (server !== "default") {
+        newUrl.searchParams.set('server', server);
+        history.replaceState(null, '', newUrl);
+    }
 }
 
 let multiplayer = !!server;
 let multiplayerMessage = document.getElementById('multiplayerMessage');
-if (multiplayer) multiplayerMessage.style.display = 'block';
+// if (multiplayer) multiplayerMessage.style.display = 'block';
 multiplayerMessage.addEventListener('click', (e) => {
     navigator.clipboard.writeText(window.location.href);
     multiplayerMessage.innerText = `COPIED! SEND TO YOUR FRIENDS!`;
