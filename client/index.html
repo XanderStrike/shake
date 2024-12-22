@@ -284,7 +284,19 @@ fetch(`${buildPath}/ztm-flexible-hud.pk3`).then(r => r.arrayBuffer()).then(r => 
 
 let gotDemoq3Pak0;
 const demoq3Pak0 = new Promise(r => gotDemoq3Pak0 = r);
-fetch(`${buildPath}/demoq3/pak0.pk3`).then(r => r.arrayBuffer()).then(r => gotDemoq3Pak0(new Uint8Array(r)));
+
+async function fetchAndCacheDemoq3Pak0() {
+    const cache = await caches.open('demoq3-cache');
+    let response = await cache.match(`${buildPath}/demoq3/pak0.pk3`);
+    if (!response) {
+        response = await fetch(`${buildPath}/demoq3/pak0.pk3`);
+        cache.put(`${buildPath}/demoq3/pak0.pk3`, response.clone());
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    gotDemoq3Pak0(new Uint8Array(arrayBuffer));
+}
+
+fetchAndCacheDemoq3Pak0();
 
 // Fool Emscripten into thinking the browser supports pointer lock.
 if (!document.body.requestPointerLock) document.body.requestPointerLock = () => true;
