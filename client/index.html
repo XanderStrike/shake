@@ -25,13 +25,13 @@
 <script src="compression-streams-polyfill.0.1.7.js"></script>
 <script type='module'>
 
-let peerServer;
-if (window.location.host.includes(':')) {
-    peerServer = `://${window.location.hostname}:8080`;
-} else {
-    peerServer = 's://peer-server.thelongestyard.link';
-    console.warn('No local peer server found! Falling back to the longest yard server');
-}
+let peerServer = "s://shake-peerserver.standke.dev";
+// if (window.location.host.includes(':')) {
+//     peerServer = `://${window.location.hostname}:8080`;
+// } else {
+//     peerServer = 's://peer-server.thelongestyard.link';
+//     console.warn('No local peer server found! Falling back to the longest yard server');
+// }
 
 const peerServerWebSocket = `ws${peerServer}`;
 const peerServerHTTP = `http${peerServer}`;
