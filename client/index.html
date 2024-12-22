@@ -199,10 +199,10 @@ window.addEventListener("keydown", (e) => {
         if (!defaultKeyBindingKeyCodes[e.code]) e.preventDefault = () => false;
     }, { capture: true });
 
-let gotDemoq3pak0;
-let demoq3pak0Promise = new Promise((resolve) => {
-    gotDemoq3pak0 = resolve;
-});
+// let gotDemoq3pak0;
+// let demoq3pak0Promise = new Promise((resolve) => {
+//     gotDemoq3pak0 = resolve;
+// });
 
 let username = localStorage.getItem('username');
 let model = localStorage.getItem('model');
@@ -279,8 +279,12 @@ if (location.pathname.startsWith('/ioq3/code/web/')) {
     buildPath = '../../build/debug-emscripten-wasm32';
 }
 let gotZtmFlexibleHud;
-const ztmFlexibleHud = new Promise(r=>gotZtmFlexibleHud=r);
-fetch(`${buildPath}/ztm-flexible-hud.pk3`).then(r=>r.arrayBuffer()).then(r=>gotZtmFlexibleHud(new Uint8Array(r)));
+const ztmFlexibleHud = new Promise(r => gotZtmFlexibleHud = r);
+fetch(`${buildPath}/ztm-flexible-hud.pk3`).then(r => r.arrayBuffer()).then(r => gotZtmFlexibleHud(new Uint8Array(r)));
+
+let gotDemoq3Pak0;
+const demoq3Pak0 = new Promise(r => gotDemoq3Pak0 = r);
+fetch(`${buildPath}/demoq3/pak0.pk3`).then(r => r.arrayBuffer()).then(r => gotDemoq3Pak0(new Uint8Array(r)));
 
 // Fool Emscripten into thinking the browser supports pointer lock.
 if (!document.body.requestPointerLock) document.body.requestPointerLock = () => true;
@@ -370,7 +374,7 @@ import(`${buildPath}/ioquake3_opengl2.wasm32.js`).then(async (ioquake3)=>{
             };
             saveFiles();
             module.FS.mkdirTree('/demoq3');
-            module.FS.writeFile('/demoq3/pak0.pk3', await demoq3pak0Promise);
+            module.FS.writeFile('/demoq3/pak0.pk3', await demoq3Pak0);
             module.FS.writeFile('/demoq3/ztm-flexible-hud.pk3', await ztmFlexibleHud);
             if (multiplayer) {
                 if (await connectToServer) {
@@ -480,7 +484,7 @@ import(`${buildPath}/ioquake3_opengl2.wasm32.js`).then(async (ioquake3)=>{
 // a gz file in a shell script in a zip file at the Internet Archive.  First
 // check to see if we have it in the cache
 
-let demoq3pak0 =  null;
+// let demoq3pak0 =  null;
 
 
 // const cache = await caches.open('thelongestyard');
@@ -492,49 +496,49 @@ let demoq3pak0 =  null;
 // }
 
 
-if (demoq3pak0) {
-    demoq3pak0 = new Uint8Array(demoq3pak0);
-    done.style.transform = 'scaleX(1)';
-} else {
-    const demoSize = 49289300;
-    let sh = await fetch('./linuxq3ademo-1.11-6.x86.gz.sh').then(r => r.body);
-    // Skip the first 0x155C bytes of the shell script to get the gz file. Ugh, the streams API is terrible.
-    // Also update the progress bar.
-    let downloaded = 0;
-    let gz = sh.pipeThrough(new TransformStream({
-        transform(chunk, controller) {
-            const skip = 0x155C;
-            if (downloaded >= skip) {
-                downloaded += chunk.byteLength;
-                done.style.transform = `scaleX(${downloaded / demoSize * .6 + .2})`;
-                controller.enqueue(chunk);
-                return;
-            }
-            const chunkStart = downloaded;
-            const chunkEnd = downloaded + chunk.byteLength;
-            downloaded = chunkEnd;
-            if (chunkEnd < skip) return;
-            controller.enqueue(chunk.subarray(skip - chunkStart));
-            done.style.transform = `scaleX(${downloaded / demoSize * .6 + .2})`;
-            if (downloaded === demoSize) {
-                done.style.transform = 'scaleX(1)';
-            }
-        }
-    }));
-    let tar = new Uint8Array(await new Response(gz.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
-    // the tar format is structured in 512 byte blocks. Read the blocks and find the pak0.pk3 file
-    for (let offset = 0; offset < tar.byteLength;) {
-        let name = String.fromCharCode.apply(null, tar.subarray(offset, offset + 100)).replace(/\0/g, '').trim();
-        let size = parseInt(String.fromCharCode.apply(null, tar.subarray(offset + 124, offset + 136)).replace(/\0/g, '').trim(), 8);
-        if (name === 'demoq3/pak0.pk3') {
-            demoq3pak0 = tar.subarray(offset + 512, offset + 512 + size);
-            // cache.put('/demoq3/pak0.pk3', new Response(demoq3pak0, { headers: { 'Content-Type': 'application/octet-stream' } }));
-            break;
-        }
-        offset += 512 + Math.ceil(size / 512) * 512;
-    }
-}
-if (!demoq3pak0) throw new Error('demoq3/pak0.pk3 not found');
-gotDemoq3pak0(demoq3pak0);
+// if (demoq3pak0) {
+//     demoq3pak0 = new Uint8Array(demoq3pak0);
+//     done.style.transform = 'scaleX(1)';
+// } else {
+//     const demoSize = 49289300;
+//     let sh = await fetch('./linuxq3ademo-1.11-6.x86.gz.sh').then(r => r.body);
+//     // Skip the first 0x155C bytes of the shell script to get the gz file. Ugh, the streams API is terrible.
+//     // Also update the progress bar.
+//     let downloaded = 0;
+//     let gz = sh.pipeThrough(new TransformStream({
+//         transform(chunk, controller) {
+//             const skip = 0x155C;
+//             if (downloaded >= skip) {
+//                 downloaded += chunk.byteLength;
+//                 done.style.transform = `scaleX(${downloaded / demoSize * .6 + .2})`;
+//                 controller.enqueue(chunk);
+//                 return;
+//             }
+//             const chunkStart = downloaded;
+//             const chunkEnd = downloaded + chunk.byteLength;
+//             downloaded = chunkEnd;
+//             if (chunkEnd < skip) return;
+//             controller.enqueue(chunk.subarray(skip - chunkStart));
+//             done.style.transform = `scaleX(${downloaded / demoSize * .6 + .2})`;
+//             if (downloaded === demoSize) {
+//                 done.style.transform = 'scaleX(1)';
+//             }
+//         }
+//     }));
+//     let tar = new Uint8Array(await new Response(gz.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+//     // the tar format is structured in 512 byte blocks. Read the blocks and find the pak0.pk3 file
+//     for (let offset = 0; offset < tar.byteLength;) {
+//         let name = String.fromCharCode.apply(null, tar.subarray(offset, offset + 100)).replace(/\0/g, '').trim();
+//         let size = parseInt(String.fromCharCode.apply(null, tar.subarray(offset + 124, offset + 136)).replace(/\0/g, '').trim(), 8);
+//         if (name === 'demoq3/pak0.pk3') {
+//             demoq3pak0 = tar.subarray(offset + 512, offset + 512 + size);
+//             // cache.put('/demoq3/pak0.pk3', new Response(demoq3pak0, { headers: { 'Content-Type': 'application/octet-stream' } }));
+//             break;
+//         }
+//         offset += 512 + Math.ceil(size / 512) * 512;
+//     }
+// }
+// if (!demoq3pak0) throw new Error('demoq3/pak0.pk3 not found');
+// gotDemoq3pak0(demoq3pak0);
 
 </script>
