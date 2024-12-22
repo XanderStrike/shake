@@ -12,6 +12,8 @@ to keep things simple every visitor will join the same lobby by default, but if 
 
 don't have friends? no problem, activate bots by appending `?lonely`
 
+want to play a different map from the demo? append `?map=q3dm7` (options are `q3dm1`, `q3dm7`, `q3dm17`, `q3tourney2`)
+
 ## disclaimer
 
 this is a very minimal scrape and remix of the extremely cool https://thelongestyard.link/ who's source can be found [here](https://github.com/jdarpinian/ioq3) and [here](https://github.com/jdarpinian/HumbleNet)

@@ -246,6 +246,11 @@ if (!query.has('lonely')) {
     }
 }
 
+let map = query.get('map');
+if (!map) {
+    map = "q3dm17";
+}
+
 let multiplayer = !!server;
 let multiplayerMessage = document.getElementById('multiplayerMessage');
 // if (multiplayer) multiplayerMessage.style.display = 'block';
@@ -377,12 +382,12 @@ import(`${buildPath}/ioquake3_opengl2.wasm32.js`).then(async (ioquake3)=>{
                     module.arguments.push(...`
                         +set net_peer_server "${peerServerWebSocket}"
                         +set net_server_name "${server}"
-                        +map q3dm17
+                        +map ${map}
                         `.trim().split(/\s+/));
                 }
             } else {
                 module.arguments.push(...`
-                    +map q3dm17
+                    +map ${map}
                     +addbot sarge ${botSkill}
                     +addbot daemia ${botSkill}
                     +addbot major ${botSkill}
