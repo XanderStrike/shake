@@ -275,9 +275,12 @@ let gotZtmFlexibleHud;
 const ztmFlexibleHud = new Promise(r => gotZtmFlexibleHud = r);
 fetchAndCacheFile(`${buildPath}/ztm-flexible-hud.pk3`, 'ztm-cache', gotZtmFlexibleHud)();
 
-let gotDemoq3Pak0;
-const demoq3Pak0 = new Promise(r => gotDemoq3Pak0 = r);
-fetchAndCacheFile(`${buildPath}/demoq3/pak0.pk3`, 'demoq3-cache', gotDemoq3Pak0)();
+let gotDemoq3Pak = [];
+const demoq3PakPromises = [];
+for (let i = 0; i <= 8; i++) {
+    demoq3PakPromises[i] = new Promise(r => gotDemoq3Pak[i] = r);
+    fetchAndCacheFile(`${buildPath}/demoq3/pak${i}.pk3`, 'demoq3-cache', gotDemoq3Pak[i])();
+}
 
 var customMap;
 if (map) {
@@ -371,7 +374,9 @@ import(`${buildPath}/ioquake3_opengl2.wasm32.js`).then(async (ioquake3) => {
             };
             saveFiles();
             module.FS.mkdirTree('/demoq3');
-            module.FS.writeFile('/demoq3/pak0.pk3', await demoq3Pak0);
+            for (let i = 0; i <= 8; i++) {
+                module.FS.writeFile(`/demoq3/pak${i}.pk3`, await demoq3PakPromises[i]);
+            }
             module.FS.writeFile('/demoq3/ztm-flexible-hud.pk3', await ztmFlexibleHud);
             if (map) {
                 module.FS.writeFile(`/demoq3/${map}.pk3`, await customMap);
