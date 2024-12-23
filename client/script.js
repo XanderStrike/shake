@@ -247,7 +247,25 @@ async function fetchAndCacheDemoq3Pak0() {
     const cache = await caches.open('demoq3-cache');
     let response = await cache.match(`${buildPath}/demoq3/pak0.pk3`);
     if (!response) {
+        const progressElement = document.getElementById('ui');
         response = await fetch(`${buildPath}/demoq3/pak0.pk3`);
+        const reader = response.body.getReader();
+        const contentLength = +response.headers.get('Content-Length');
+        let receivedLength = 0;
+        let chunks = [];
+        
+        while(true) {
+            const {done, value} = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            receivedLength += value.length;
+            const percentage = Math.round((receivedLength / contentLength) * 100);
+            progressElement.textContent = `First time setup ${percentage}%`;
+        }
+        
+        progressElement.style.display = 'none';
+        const blob = new Blob(chunks);
+        response = new Response(blob);
         cache.put(`${buildPath}/demoq3/pak0.pk3`, response.clone());
     }
     const arrayBuffer = await response.arrayBuffer();
