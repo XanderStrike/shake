@@ -236,43 +236,55 @@ let buildPath = '.';
 if (location.pathname.startsWith('/ioq3/code/web/')) {
     buildPath = '../../build/debug-emscripten-wasm32';
 }
+function fetchAndCacheFile(filePath, cacheName, promiseResolver) {
+    return async function() {
+        const cache = await caches.open(cacheName);
+        let response = await cache.match(filePath);
+        if (!response) {
+            const uiElement = document.getElementById('ui');
+            const progressDiv = document.createElement('div');
+            progressDiv.id = `progress-${filePath}`;
+            uiElement.appendChild(progressDiv);
+
+            response = await fetch(filePath);
+            const reader = response.body.getReader();
+            const contentLength = +response.headers.get('Content-Length');
+            let receivedLength = 0;
+            let chunks = [];
+            
+            while(true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                receivedLength += value.length;
+                const percentage = Math.round((receivedLength / contentLength) * 100);
+                progressDiv.textContent = `${filePath} ${percentage}%`;
+            }
+            
+            progressDiv.style.display = 'none';
+            const blob = new Blob(chunks);
+            response = new Response(blob);
+            cache.put(filePath, response.clone());
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        promiseResolver(new Uint8Array(arrayBuffer));
+    };
+}
+
 let gotZtmFlexibleHud;
 const ztmFlexibleHud = new Promise(r => gotZtmFlexibleHud = r);
-fetch(`${buildPath}/ztm-flexible-hud.pk3`).then(r => r.arrayBuffer()).then(r => gotZtmFlexibleHud(new Uint8Array(r)));
+fetchAndCacheFile(`${buildPath}/ztm-flexible-hud.pk3`, 'ztm-cache', gotZtmFlexibleHud)();
 
 let gotDemoq3Pak0;
 const demoq3Pak0 = new Promise(r => gotDemoq3Pak0 = r);
+fetchAndCacheFile(`${buildPath}/demoq3/pak0.pk3`, 'demoq3-cache', gotDemoq3Pak0)();
 
-async function fetchAndCacheDemoq3Pak0() {
-    const cache = await caches.open('demoq3-cache');
-    let response = await cache.match(`${buildPath}/demoq3/pak0.pk3`);
-    if (!response) {
-        const progressElement = document.getElementById('ui');
-        response = await fetch(`${buildPath}/demoq3/pak0.pk3`);
-        const reader = response.body.getReader();
-        const contentLength = +response.headers.get('Content-Length');
-        let receivedLength = 0;
-        let chunks = [];
-        
-        while(true) {
-            const {done, value} = await reader.read();
-            if (done) break;
-            chunks.push(value);
-            receivedLength += value.length;
-            const percentage = Math.round((receivedLength / contentLength) * 100);
-            progressElement.textContent = `First time setup ${percentage}%`;
-        }
-        
-        progressElement.style.display = 'none';
-        const blob = new Blob(chunks);
-        response = new Response(blob);
-        cache.put(`${buildPath}/demoq3/pak0.pk3`, response.clone());
-    }
-    const arrayBuffer = await response.arrayBuffer();
-    gotDemoq3Pak0(new Uint8Array(arrayBuffer));
+var customMap;
+if (map) {
+    let gotcustomMap;
+    customMap = new Promise(r => gotcustomMap = r);
+    fetchAndCacheFile(`${buildPath}/demoq3/${map}.pk3`, 'demoq3-cache', gotcustomMap)();
 }
-
-fetchAndCacheDemoq3Pak0();
 
 // Fool Emscripten into thinking the browser supports pointer lock.
 if (!document.body.requestPointerLock) document.body.requestPointerLock = () => true;
@@ -361,6 +373,9 @@ import(`${buildPath}/ioquake3_opengl2.wasm32.js`).then(async (ioquake3) => {
             module.FS.mkdirTree('/demoq3');
             module.FS.writeFile('/demoq3/pak0.pk3', await demoq3Pak0);
             module.FS.writeFile('/demoq3/ztm-flexible-hud.pk3', await ztmFlexibleHud);
+            if (map) {
+                module.FS.writeFile(`/demoq3/${map}.pk3`, await customMap);
+            }
             if (multiplayer) {
                 if (await connectToServer) {
                     module.arguments.push(...`
