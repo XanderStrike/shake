@@ -1,12 +1,10 @@
 html, body { margin: 0; padding: 0; overflow: hidden; background: rgb(0, 0, 0);
-    font-family: "Antonio", sans-serif;
     font-optical-sizing: auto;
     font-weight: 700;
     font-style: normal;
     letter-spacing: -.05ch;
 }
 canvas { max-width: 100%; max-height: 100%; min-width: 100%; min-height: 100%; object-fit: contain; }
-#progress { position: absolute; top: 0; bottom: 0; left: 0; right: 0; margin: auto; width: 80%; height: 4em; background: black; border: .5em solid white; padding: .5em; }
 #blocker {
     position: absolute;
     top: 0;
@@ -31,61 +29,6 @@ canvas { max-width: 100%; max-height: 100%; min-width: 100%; min-height: 100%; o
     user-select: none;
     -webkit-user-select: none;
 }
-
-.button::before,
-.button::after {
-    content:attr(title);
-    display:block;
-    position:absolute;
-    top:0;
-    left:0;
-    bottom:0;
-    right:0;
-    padding: .2em
-}
-
-.button::before {
-    color: rgb(200, 0, 0);
-    text-shadow: .5px .5px .5px rgba(0, 0, 0, 1);
-}
-
-.selected::after, .button:hover::after {
-    animation: blink .5s infinite;
-    animation-timing-function: ease-in-out;
-    color: rgb(255,0,0);
-    text-shadow: 0 0 1px rgba(255, 0, 0, 1);
-}
-
-#ui:hover .selected:not(:hover)::after {
-    animation: none;
-    text-shadow: none;
-}
-.button {
-    position: relative;
-    font-family: "Antonio", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 700;
-    font-style: normal;
-    padding: .2em;
-    font-weight: bold;
-    color: transparent;
-    background: transparent;
-    text-align: center;
-}
-
-@keyframes blink {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0;
-    }
-}
-
-/* .button:hover {
-    color: rgb(255, 0, 0);
-    text-shadow: 0 0 5px rgba(255, 0, 0, 0.8), 0 0 10px rgba(255, 0, 0, 0.6), 0 0 15px rgba(255, 0, 0, 0.4), 4px 5px  rgba(0, 0, 0, 1);
-} */
 
 #move, #look {
     width: 50%;
