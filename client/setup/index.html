@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quake 3 Launcher</title>
+    <style>
+      body {
+        background-color: black;
+        color: lime;
+        font-family: "Courier New", Courier, monospace;
+        text-align: center;
+        padding-top: 50px;
+      }
+      .container {
+        border: 2px solid lime;
+        padding: 20px;
+        display: inline-block;
+      }
+      input,
+      select {
+        background-color: black;
+        color: lime;
+        border: 1px solid lime;
+        margin: 10px 0;
+        padding: 5px;
+      }
+      button {
+        background-color: lime;
+        color: black;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: darkgreen;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Quake 3 Launcher</h1>
+      <form id="launchForm">
+        <!-- <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" placeholder="random"><br> -->
+
+        <label for="server" id="serverLabel">Server Name:</label><br />
+        <input type="text" id="server" name="server" value="default" /><br />
+
+        <input
+          type="checkbox"
+          id="bots"
+          name="bots"
+          onclick="toggleServerVisibility()"
+        />
+        <label for="bots">Enable Bots</label><br />
+
+        <label for="map">Select Map:</label><br />
+        <select id="map" name="map">
+          <option value="Q3DM0">Q3DM0: Introduction</option>
+          <option value="Q3DM1">Q3DM1: Arena Gate</option>
+          <option value="Q3DM2">Q3DM2: House of Pain</option>
+          <option value="Q3DM3">Q3DM3: Arena of Death</option>
+          <option value="Q3DM4">Q3DM4: The Place of Many Deaths</option>
+          <option value="Q3DM5">Q3DM5: The Forgotten Place</option>
+          <option value="Q3DM6">Q3DM6: The Camping Grounds</option>
+          <option value="Q3DM7">Q3DM7: Temple of Retribution</option>
+          <option value="Q3DM8">Q3DM8: Brimstone Abbey</option>
+          <option value="Q3DM9">Q3DM9: Hero's Keep</option>
+          <option value="Q3DM10">Q3DM10: The Nameless Place</option>
+          <option value="Q3DM11">Q3DM11: Deva Station</option>
+          <option value="Q3DM12">Q3DM12: The Dredwerkz</option>
+          <option value="Q3DM13">Q3DM13: Lost World</option>
+          <option value="Q3DM14">Q3DM14: Grim Dungeons</option>
+          <option value="Q3DM15">Q3DM15: Demon Keep</option>
+          <option value="Q3DM16">Q3DM16: Bouncy Map</option>
+          <option value="Q3DM17">Q3DM17: The Longest Yard</option>
+          <option value="Q3DM18">Q3DM18: Space Chamber</option>
+          <option value="Q3DM19">Q3DM19: Apocalypse Void</option>
+          <option value="Q3TOURNEY1">Q3TOURNEY1: Powerstation 0218</option>
+          <option value="Q3TOURNEY2">Q3TOURNEY2: The Proving Grounds</option>
+          <option value="Q3TOURNEY3">Q3TOURNEY3: Hell's Gate</option>
+          <option value="Q3TOURNEY4">Q3TOURNEY4: Vertical Vengeance</option>
+          <option value="Q3TOURNEY5">Q3TOURNEY5: Fatal Instinct</option>
+          <option value="Q3TOURNEY6">Q3TOURNEY6: The Very End of You</option>
+
+          <option value="">-- CUSTOM MAPS --</option>
+
+          <option value="17rocketmix">17rocketmix.pk3</option>
+          <option value="airking">airking.pk3</option>
+          <option value="alkdm11">alkdm11.pk3</option>
+          <option value="antilogic">antilogic.pk3</option>
+          <option value="ASSault">ASSault.pk3</option>
+          <option value="auh3dm1">auh3dm1.pk3</option>
+          <option value="cf">cf.pk3</option>
+          <option value="chiropteraDM">chiropteraDM.pk3</option>
+          <option value="chronic">chronic.pk3</option>
+          <option value="coliseum">coliseum.pk3</option>
+          <option value="ct3tourney2">ct3tourney2.pk3</option>
+          <option value="ct3tourney3_lvl">ct3tourney3_lvl.pk3</option>
+          <option value="ct3tourney3">ct3tourney3.pk3</option>
+          <option value="d3xf1">d3xf1.pk3</option>
+          <option value="dd17">dd17.pk3</option>
+          <option value="dmmq3dm6">dmmq3dm6.pk3</option>
+          <option value="dmmq3dm6_tga">dmmq3dm6_tga.pk3</option>
+          <option value="focal_p132">focal_p132.pk3</option>
+          <option value="fr3dm1">fr3dm1.pk3</option>
+          <option value="goldleaf">goldleaf.pk3</option>
+          <option value="gs3dm5">gs3dm5.pk3</option>
+          <option value="hongx">hongx.pk3</option>
+          <option value="hub3aeroq3a">hub3aeroq3a.pk3</option>
+          <option value="hub3dm1">hub3dm1.pk3</option>
+          <option value="hymn">hymn.pk3</option>
+          <option value="ik3dm2">ik3dm2.pk3</option>
+          <option value="jk_tourney2">jk_tourney2.pk3</option>
+          <option value="jnydm">jnydm.pk3</option>
+          <option value="jof3dm1">jof3dm1.pk3</option>
+          <option value="jof3dm2">jof3dm2.pk3</option>
+          <option value="js_tourney1">js_tourney1.pk3</option>
+          <option value="jstrq3dm1">jstrq3dm1.pk3</option>
+          <option value="jug3dm1">jug3dm1.pk3</option>
+          <option value="lloydmdm2">lloydmdm2.pk3</option>
+          <option value="lsdm1">lsdm1.pk3</option>
+          <option value="lun3_20b1">lun3_20b1.pk3</option>
+          <option value="lun3dm5">lun3dm5.pk3</option>
+          <option value="map-13agony">map-13agony.pk3</option>
+          <option value="map-13dawn">map-13dawn.pk3</option>
+          <option value="map-burning1">map-burning1.pk3</option>
+          <option value="map-charon3dm12">map-charon3dm12.pk3</option>
+          <option value="map-charon3dm666">map-charon3dm666.pk3</option>
+          <option value="map-estatica-cardigan-nomusic">
+            map-estatica-cardigan-nomusic.pk3
+          </option>
+          <option value="map-hope">map-hope.pk3</option>
+          <option value="map-qfraggel3">map-qfraggel3.pk3</option>
+          <option value="mrcq3t6">mrcq3t6.pk3</option>
+          <option value="necro6">necro6.pk3</option>
+          <option value="ne_duel">ne_duel.pk3</option>
+          <option value="obs3dm2">obs3dm2.pk3</option>
+          <option value="obs3dm3">obs3dm3.pk3</option>
+          <option value="polo3dm5">polo3dm5.pk3</option>
+          <option value="pqarena">pqarena.pk3</option>
+          <option value="pro-q3tourney7">pro-q3tourney7.pk3</option>
+          <option value="pro-t4_v2">pro-t4_v2.pk3</option>
+          <option value="pukka3tourney7">pukka3tourney7.pk3</option>
+          <option value="q3dm16rox">q3dm16rox.pk3</option>
+          <option value="q3dmp23">q3dmp23.pk3</option>
+          <option value="q3gwdm2">q3gwdm2.pk3</option>
+          <option value="q3mrldm2">q3mrldm2.pk3</option>
+          <option value="q3rev">q3rev.pk3</option>
+          <option value="q3tbdm3">q3tbdm3.pk3</option>
+          <option value="q3wctf1">q3wctf1.pk3</option>
+          <option value="q3wctf2">q3wctf2.pk3</option>
+          <option value="q3wctf3">q3wctf3.pk3</option>
+          <option value="q3work1">q3work1.pk3</option>
+          <option value="qsc_tourney5">qsc_tourney5.pk3</option>
+          <option value="quartzdm1">quartzdm1.pk3</option>
+          <option value="qxtourney1">qxtourney1.pk3</option>
+          <option value="ra3map11">ra3map11.pk3</option>
+          <option value="ra3map12">ra3map12.pk3</option>
+          <option value="ra3map1">ra3map1.pk3</option>
+          <option value="redq3dm4">redq3dm4.pk3</option>
+          <option value="reqdm5">reqdm5.pk3</option>
+          <option value="rustgrad">rustgrad.pk3</option>
+          <option value="sainttourney1">sainttourney1.pk3</option>
+          <option value="shibam_1.3">shibam_1.3.pk3</option>
+          <option value="skull">skull.pk3</option>
+          <option value="storm3tourney6">storm3tourney6.pk3</option>
+          <option value="trespass">trespass.pk3</option>
+          <option value="ztn3dm1">ztn3dm1.pk3</option>
+          <option value="ztn3dm2">ztn3dm2.pk3</option>
+          <option value="ztn3tourney1">ztn3tourney1.pk3</option></select
+        ><br />
+
+        <button type="submit">Launch Game</button>
+      </form>
+    </div>
+    <script>
+      document
+        .getElementById("launchForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+          const server = document.getElementById("server").value;
+          const map = document.getElementById("map").value;
+          const botsChecked = document.getElementById("bots").checked;
+
+          const queryParams = new URLSearchParams({
+            map: map,
+            ...(botsChecked
+              ? { lonely: true }
+              : server !== "default" && { server: server }),
+          }).toString();
+
+          window.location.href = `/?${queryParams}`;
+        });
+
+      function toggleServerVisibility() {
+        var serverLabel = document.getElementById("serverLabel");
+        var serverInput = document.getElementById("server");
+        if (document.getElementById("bots").checked) {
+          serverLabel.style.display = "none";
+          serverInput.style.display = "none";
+        } else {
+          serverLabel.style.display = "block";
+          serverInput.style.display = "block";
+        }
+      }
+    </script>
+  </body>
+</html>
