@@ -1,5 +1,5 @@
 
-let peerServer = "s://shake-peerserver.standke.dev";
+let peerServer = "s://shake-peerserver.astandke.com";
 
 const peerServerWebSocket = `ws${peerServer}`;
 const peerServerHTTP = `http${peerServer}`;
