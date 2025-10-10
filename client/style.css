@@ -1,14 +1,12 @@
 html, body { 
   margin: 0; padding: 0; overflow: hidden; background: rgb(0, 0, 0);
-  max-width: 982px;
 }
 canvas { 
-	margin-top: 1.25em;
   max-width: 100%; 
   max-height: 100%; 
   min-width: 100%; 
   min-height: 100%; 
-  object-fit: contain; 
+  object-fit: scale-down; 
 }
 a, a:hover, a:active, a:visited {
   color: white;
