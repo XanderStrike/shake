@@ -295,20 +295,47 @@ async function downloadAndCacheDemoq3Pak0(promiseResolver) {
         return;
     }
     
+    // Create progress UI element
+    const uiElement = document.getElementById('ui');
+    const progressDiv = document.createElement('div');
+    progressDiv.id = 'progress-pak0';
+    uiElement.appendChild(progressDiv);
+    
     let partUrls = [];
     for (let i = 0; i <= 19; i++) {
         partUrls.push(`${buildPath}/demoq3/pak0/pak0.pk3.part${i.toString().padStart(2, '0')}`);
     }
-    // Download all parts of pak0.pk3
-    console.log('Downloading parts...');
-    const partPromises = partUrls.map(url => 
-      fetch(url).then(response => {
-        if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-        return response.blob();
-      })
-    );
     
-    const parts = await Promise.all(partPromises);
+    // Download all parts of pak0.pk3 with progress tracking
+    console.log('Downloading parts...');
+    const parts = [];
+    let totalDownloaded = 0;
+    const totalParts = partUrls.length;
+    
+    for (let i = 0; i < partUrls.length; i++) {
+        const url = partUrls[i];
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+        
+        const reader = response.body.getReader();
+        const contentLength = +response.headers.get('Content-Length');
+        let receivedLength = 0;
+        let chunks = [];
+        
+        while(true) {
+            const {done, value} = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            receivedLength += value.length;
+            const partPercentage = Math.round((receivedLength / contentLength) * 100);
+            const overallPercentage = Math.round(((i + (receivedLength / contentLength)) / totalParts) * 100);
+            progressDiv.textContent = `${buildPath}/demoq3/pak0.pk3 part ${i + 1}/${totalParts} (${partPercentage}%) - Overall: ${overallPercentage}%`;
+        }
+        
+        parts.push(new Blob(chunks));
+    }
+    
+    progressDiv.textContent = `${buildPath}/demoq3/pak0.pk3 - Combining parts...`;
     console.log(`Downloaded ${parts.length} parts`);
     
     // Combine into single blob
@@ -325,6 +352,8 @@ async function downloadAndCacheDemoq3Pak0(promiseResolver) {
     
     await cache.put(`${buildPath}/demoq3/pak0.pk3`, response.clone());
     console.log('File cached successfully!');
+    
+    progressDiv.style.display = 'none';
 
     const arrayBuffer = await response.arrayBuffer();
     promiseResolver(new Uint8Array(arrayBuffer));
