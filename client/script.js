@@ -277,6 +277,58 @@ fetchAndCacheFile(`${buildPath}/ztm-flexible-hud.pk3`, 'ztm-cache', gotZtmFlexib
 
 let gotDemoq3Pak = [];
 const demoq3PakPromises = [];
+
+demoq3PakPromises[0] = new Promise(r => gotDemoq3Pak[0] = r);
+// fetchAndCacheFile(`${buildPath}/demoq3/pak0.pk3`, 'demoq3-cache', gotDemoq3Pak[0])();
+
+async function downloadAndCacheDemoq3Pak0(promiseResolver) {
+    // Check if file already exists in cache
+    const cache = await caches.open('demoq3-cache');
+    const cachedResponse = await cache.match(`${buildPath}/demoq3/pak0.pk3`);
+    
+    if (cachedResponse) {
+        console.log('pak0.pk3 found in cache, using cached version');
+        const cachedBlob = await cachedResponse.blob();
+        console.log(`Cached file size: ${cachedBlob.size} bytes`);
+        promiseResolver(cachedBlob);
+        return;
+    }
+    
+    let partUrls = [];
+    for (let i = 0; i <= 19; i++) {
+        partUrls.push(`${buildPath}/demoq3/pak0/pak0.pk3.part${i.toString().padStart(2, '0')}`);
+    }
+    // Download all parts of pak0.pk3
+    console.log('Downloading parts...');
+    const partPromises = partUrls.map(url => 
+      fetch(url).then(response => {
+        if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+        return response.blob();
+      })
+    );
+    
+    const parts = await Promise.all(partPromises);
+    console.log(`Downloaded ${parts.length} parts`);
+    
+    // Combine into single blob
+    const completeBlob = new Blob(parts, { type: 'application/octet-stream' });
+    console.log(`Combined file size: ${completeBlob.size} bytes`);
+    
+    // Store in cache
+    const response = new Response(completeBlob, {
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': completeBlob.size
+      }
+    });
+    
+    await cache.put(`${buildPath}/demoq3/pak0.pk3`, response.clone());
+    console.log('File cached successfully!');
+    
+    promiseResolver(response);
+}
+downloadAndCacheDemoq3Pak0(gotDemoq3Pak[0]);
+
 for (let i = 0; i <= 8; i++) {
     demoq3PakPromises[i] = new Promise(r => gotDemoq3Pak[i] = r);
     fetchAndCacheFile(`${buildPath}/demoq3/pak${i}.pk3`, 'demoq3-cache', gotDemoq3Pak[i])();
