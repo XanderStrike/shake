@@ -290,7 +290,8 @@ async function downloadAndCacheDemoq3Pak0(promiseResolver) {
         console.log('pak0.pk3 found in cache, using cached version');
         const cachedBlob = await cachedResponse.blob();
         console.log(`Cached file size: ${cachedBlob.size} bytes`);
-        promiseResolver(cachedBlob);
+        const arrayBuffer = await cachedBlob.arrayBuffer();
+        promiseResolver(new Uint8Array(arrayBuffer));
         return;
     }
     
@@ -324,15 +325,18 @@ async function downloadAndCacheDemoq3Pak0(promiseResolver) {
     
     await cache.put(`${buildPath}/demoq3/pak0.pk3`, response.clone());
     console.log('File cached successfully!');
-    
-    promiseResolver(response);
+
+    const arrayBuffer = await response.arrayBuffer();
+    promiseResolver(new Uint8Array(arrayBuffer));
 }
 downloadAndCacheDemoq3Pak0(gotDemoq3Pak[0]);
 
-for (let i = 0; i <= 8; i++) {
+for (let i = 1; i <= 8; i++) {
     demoq3PakPromises[i] = new Promise(r => gotDemoq3Pak[i] = r);
     fetchAndCacheFile(`${buildPath}/demoq3/pak${i}.pk3`, 'demoq3-cache', gotDemoq3Pak[i])();
 }
+
+await Promise.all(demoq3PakPromises);
 
 var customMap;
 if (map) {
