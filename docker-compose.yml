@@ -11,6 +11,7 @@ services:
   shake-dev:
     image: nginx:latest
     container_name: shake-dev
+    restart: always
     environment:
       - VIRTUAL_HOST=shake.astandke.com
       - LETSENCRYPT_HOST=shake.astandke.com
@@ -22,6 +23,7 @@ services:
   shake-server:
     image: xanderstrike/shake-server:latest
     container_name: shake-server
+    restart: always
     environment:
       - VIRTUAL_HOST=shake-peerserver.astandke.com
       - LETSENCRYPT_HOST=shake-peerserver.astandke.com
