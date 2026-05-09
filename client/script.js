@@ -468,6 +468,11 @@ import(`${buildPath}/ioquake3_opengl2.wasm32.js`).then(async (ioquake3) => {
             module.removeRunDependency('setup-ioq3-filesystem');
         }],
     });
+    document.getElementById('share-link').addEventListener('click', async (e) => {
+        e.preventDefault();
+        await navigator.clipboard.writeText(window.location.href);
+    });
+
     if (multiplayer) {
         // Always run server even in background tabs.
         // Workers are not subject to setTimeout/setInterval throttling in background tabs and they can postMessage to wake the main thread.

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # shake-client:
   #   image: xanderstrike/shake-client:latest
