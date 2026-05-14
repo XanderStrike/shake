@@ -1,26 +1,33 @@
-# Caddyfile – local HTTPS reverse proxy for shake
+# The Caddyfile is an easy way to configure your Caddy web server.
 #
-# Replace 192.168.1.X with the actual LAN IP of your server (run `hostname -I`
-# to find it). Caddy will generate a self-signed TLS certificate automatically.
-# Run `docker exec caddy caddy trust` once per client device to add the local
-# root CA so browsers don't show a certificate warning.
+# Unless the file starts with a global options block, the first
+# uncommented line is always the address of your site.
 #
-# For a public server with a real domain name (e.g. shake.example.com), replace
-# the IP address with your domain and change `tls internal` to `tls` — Caddy
-# will obtain a Let's Encrypt certificate automatically (no extra config needed).
+# To use your own domain name (with automatic HTTPS), first make
+# sure your domain's A/AAAA DNS records are properly pointed to
+# this machine's public IP, then replace ":80" below with your
+# domain name.
 
-https://192.168.1.X {  # ← replace with your server's LAN IP (run: hostname -I)
+https://10.34.120.11 {
     tls internal
+    encode zstd gzip
 
-    # Peer-server traffic: any path starting with /peer is forwarded to
-    # shake-server. The prefix is stripped so PeerJS sees requests at "/".
     handle /peer* {
         uri strip_prefix /peer
-        reverse_proxy shake-server:8080
+        reverse_proxy localhost:8080
     }
 
-    # Everything else goes to the game client (nginx).
+    handle /lookup* {
+        # removed: uri strip_prefix /lookup
+        reverse_proxy localhost:8080
+    }
+
     handle {
-        reverse_proxy shake-dev:80
+        reverse_proxy localhost:8081
     }
 }
+# Refer to the Caddy docs for more information:
+# https://caddyserver.com/docs/caddyfile
+
+
+
