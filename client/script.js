@@ -1,8 +1,5 @@
 
-let peerServer = "s://shake-peerserver.astandke.com";
-
-const peerServerWebSocket = `ws${peerServer}`;
-const peerServerHTTP = `http${peerServer}`;
+import { QNet } from './qnet.js';
 
 // HACK: prevent the browser from queueing too many frames. Defeat pipelineing by calling readPixels() after each frame.
 // This synchronizes the content process and the GPU process. We don't want to delay finished frames, so we do this just after
@@ -224,12 +221,14 @@ if (!map) {
 
 let multiplayer = !!server;
 
-let decideConnectToServer;
-let connectToServer = new Promise(r => decideConnectToServer = r);
+// Peer id of the server to connect to; null means we host. Decided by the election below.
+let hostPeer = null;
+let quicknetReady = null;
 if (server) {
     // sanitize to hopefully avoid command injection in autoexec.cfg
     server = server.replace(/"/g, '');
-    fetch(`${peerServerHTTP}/lookup/${server}`).then(r => r.json()).then((r) => decideConnectToServer(r.found)).catch(() => { decideConnectToServer(false); });
+    // Start joining the room now so it overlaps with the game data downloads.
+    quicknetReady = QNet.init(server);
 }
 
 let buildPath = '.';
@@ -374,6 +373,28 @@ if (map) {
     fetchAndCacheFile(`${buildPath}/demoq3/${map}.pk3`, 'demoq3-cache', gotcustomMap)();
 }
 
+if (multiplayer) {
+    await quicknetReady;
+    // Let presence settle so tabs loading at the same time see each other and agree.
+    await new Promise((r) => setTimeout(r, 500));
+    hostPeer = QNet.electHost(map);
+    if (hostPeer !== null) {
+        // Join on the host's map so we load the same paks it does (sv_pure). The host may
+        // still be advertising it, so give its state a moment to arrive.
+        let host = QNet.peer(hostPeer);
+        for (let i = 0; i < 20 && !(host && host.map); i++) {
+            await new Promise((r) => setTimeout(r, 100));
+            host = QNet.peer(hostPeer);
+        }
+        if (host && host.map && host.map !== map) {
+            const url = new URL(window.location);
+            url.searchParams.set('map', host.map);
+            window.location.replace(url);
+            await new Promise(() => {}); // halt boot; the page is reloading
+        }
+    }
+}
+
 // Fool Emscripten into thinking the browser supports pointer lock.
 if (!document.body.requestPointerLock) document.body.requestPointerLock = () => true;
 
@@ -467,15 +488,12 @@ import(`${buildPath}/ioquake3_opengl2.wasm32.js`).then(async (ioquake3) => {
                 module.FS.writeFile(`/demoq3/${map}.pk3`, await customMap);
             }
             if (multiplayer) {
-                if (await connectToServer) {
+                if (hostPeer !== null) {
                     module.arguments.push(...`
-                        +set net_peer_server "${peerServerWebSocket}"
-                        +connect "${server}.humblenet"
+                        +connect "peer_${hostPeer}.qnet"
                     `.trim().split(/\s+/));
                 } else {
                     module.arguments.push(...`
-                        +set net_peer_server "${peerServerWebSocket}"
-                        +set net_server_name "${server}"
                         +map ${map}
                         `.trim().split(/\s+/));
                 }

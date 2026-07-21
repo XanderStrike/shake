@@ -1,0 +1,152 @@
+diff --git a/Makefile b/Makefile
+index 6ab20fa..79f19ce 100644
+--- a/Makefile
++++ b/Makefile
+@@ -244,8 +244,8 @@ ifndef USE_RENDERER_DLOPEN
+ USE_RENDERER_DLOPEN=1
+ endif
+ 
+-ifndef USE_HUMBLENET
+-USE_HUMBLENET=0
++ifndef USE_QUICKNET
++USE_QUICKNET=0
+ endif
+ 
+ ifndef USE_YACC
+@@ -286,7 +286,6 @@ OPUSDIR=$(MOUNT_DIR)/opus-1.2.1
+ OPUSFILEDIR=$(MOUNT_DIR)/opusfile-0.9
+ ZDIR=$(MOUNT_DIR)/zlib
+ TOOLSDIR=$(MOUNT_DIR)/tools
+-HDIR=$(MOUNT_DIR)/humblenet
+ Q3ASMDIR=$(MOUNT_DIR)/tools/asm
+ LBURGDIR=$(MOUNT_DIR)/tools/lcc/lburg
+ Q3CPPDIR=$(MOUNT_DIR)/tools/lcc/cpp
+@@ -643,13 +642,6 @@ ifeq ($(PLATFORM),darwin)
+ 
+   NOTSHLIBCFLAGS=-mdynamic-no-pic
+ 
+-  ifeq ($(USE_HUMBLENET),1)
+-    LIBS += $(LIBSDIR)/macosx/libhumblenet.dylib
+-    EXTRA_FILES += $(LIBSDIR)/macosx/libhumblenet.dylib
+-    BASE_CFLAGS += -DUSE_HUMBLENET
+-    LDFLAGS += -rpath @executable_path/
+-  endif
+-
+ else # ifeq darwin
+ 
+ 
+@@ -1090,7 +1082,7 @@ ifeq ($(PLATFORM),emscripten)
+   BUILD_GAME_SO=0
+   BUILD_GAME_QVM=0
+ 
+-  USE_HUMBLENET=1
++  USE_QUICKNET=1
+   BUILD_SERVER=1
+ 
+   CLIENT_EXTRA_FILES+=code/web/index.html code/web/GamepadEmulator.js code/web/compression-streams-polyfill.0.1.7.js
+@@ -1273,8 +1265,8 @@ ifneq ($(BUILD_AUTOUPDATER),0)
+   TARGETS += $(B)/$(AUTOUPDATER_BIN)
+ endif
+ 
+-ifeq ($(USE_HUMBLENET),1)
+-  BASE_CFLAGS += -DUSE_HUMBLENET
++ifeq ($(USE_QUICKNET),1)
++  BASE_CFLAGS += -DUSE_QUICKNET
+ endif
+ 
+ ifeq ($(USE_OPENAL),1)
+@@ -2445,13 +2437,6 @@ ifeq ($(PLATFORM),darwin)
+     $(B)/client/sys_osx.o
+ endif
+ 
+-ifeq ($(PLATFORM),emscripten)
+-ifeq ($(USE_HUMBLENET),1)
+-  Q3OBJ += \
+-    $(B)/client/humblenet_asmjs_amalgam.o
+-endif
+-endif
+-
+ ifeq ($(USE_MUMBLE),1)
+   Q3OBJ += \
+     $(B)/client/libmumblelink.o
+@@ -2640,13 +2625,6 @@ ifeq ($(PLATFORM),darwin)
+     $(B)/ded/sys_osx.o
+ endif
+ 
+-ifeq ($(PLATFORM),emscripten)
+-ifeq ($(USE_HUMBLENET),1)
+-  Q3DOBJ += \
+-    $(B)/ded/humblenet_asmjs_amalgam.o
+-endif
+-endif
+-
+ $(B)/$(SERVERBIN)$(FULLBINEXT): $(Q3DOBJ)
+ 	$(echo_cmd) "LD $@"
+ 	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) $(NOTSHLIBLDFLAGS) $(SERVER_LDFLAGS) -o $@ $(Q3DOBJ) $(LIBS)
+@@ -2958,13 +2936,6 @@ $(B)/client/%.o: $(CDIR)/%.c
+ $(B)/client/%.o: $(SDIR)/%.c
+ 	$(DO_CC)
+ 
+-$(B)/client/humblenet_asmjs_amalgam.o: $(HDIR)/humblenet_asmjs_amalgam.cpp
+-	$(echo_cmd) "CC $<"
+-	$(Q)$(CC) $(NOTSHLIBCFLAGS) $(CFLAGS) $(CLIENT_CFLAGS) $(OPTIMIZE) -o $@ -c $<
+-
+-$(B)/client/%.o: $(HDIR)/%.cpp
+-	$(DO_CC)
+-
+ $(B)/client/%.o: $(CMDIR)/%.c
+ 	$(DO_CC)
+ 
+@@ -3049,13 +3020,6 @@ $(B)/ded/%.o: $(ASMDIR)/%.c
+ $(B)/ded/%.o: $(SDIR)/%.c
+ 	$(DO_DED_CC)
+ 
+-$(B)/ded/humblenet_asmjs_amalgam.o: $(HDIR)/humblenet_asmjs_amalgam.cpp
+-	$(echo_cmd) "DED_CC $<"
+-	$(Q)$(CC) $(NOTSHLIBCFLAGS) -DDEDICATED $(CFLAGS) $(SERVER_CFLAGS) $(OPTIMIZE) -o $@ -c $<
+-
+-$(B)/ded/%.o: $(HDIR)/%.cpp
+-	$(DO_DED_CC)
+-
+ $(B)/ded/%.o: $(CMDIR)/%.c
+ 	$(DO_DED_CC)
+ 
+diff --git a/code/qcommon/net_ip.c b/code/qcommon/net_ip.c
+index a412340..ff7424c 100644
+--- a/code/qcommon/net_ip.c
++++ b/code/qcommon/net_ip.c
+@@ -118,10 +118,8 @@ static SOCKET	ip6_socket = INVALID_SOCKET;
+ static SOCKET	socks_socket = INVALID_SOCKET;
+ static SOCKET	multicast6_socket = INVALID_SOCKET;
+ 
+-#ifdef USE_HUMBLENET
+-#   define HUMBLENET_SOCKET_IMPL
+-#   include "../humblenet/humblenet_socket.h"
+-#   include "net_humblenet.c"
++#ifdef USE_QUICKNET
++#   include "net_quick.c"
+ #endif
+ 
+ // Keep track of currently joined multicast group.
+@@ -1587,8 +1585,8 @@ void NET_Init( void ) {
+ 	Com_Printf( "Winsock Initialized\n" );
+ #endif
+ 
+-#ifdef USE_HUMBLENET
+-	HUMBLENET_Init();
++#ifdef USE_QUICKNET
++	QNET_Init();
+ #endif
+ 
+ 
+@@ -1667,8 +1665,8 @@ void NET_Sleep(int msec)
+ 	int retval;
+ 	SOCKET highestfd = INVALID_SOCKET;
+ 
+-#ifdef USE_HUMBLENET
+-    HUMBLENET_Update();
++#ifdef USE_QUICKNET
++    QNET_Update();
+ #endif
+ 
+ 	if(msec < 0)
