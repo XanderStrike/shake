@@ -301,34 +301,41 @@ async function downloadAndCacheDemoq3Pak0(promiseResolver) {
         partUrls.push(`${buildPath}/demoq3/pak0/pak0.pk3.part${i.toString().padStart(2, '0')}`);
     }
     
-    // Download all parts of pak0.pk3 with progress tracking
+    // Download all parts of pak0.pk3 in parallel with aggregate progress tracking
     console.log('Downloading parts...');
-    const parts = [];
-    let totalDownloaded = 0;
     const totalParts = partUrls.length;
-    
-    for (let i = 0; i < partUrls.length; i++) {
-        const url = partUrls[i];
+    const parts = new Array(totalParts);
+    const receivedPerPart = new Array(totalParts).fill(0);
+    const lengthPerPart = new Array(totalParts).fill(0);
+    let completedParts = 0;
+
+    function updateProgress() {
+        const received = receivedPerPart.reduce((a, b) => a + b, 0);
+        const total = lengthPerPart.reduce((a, b) => a + b, 0);
+        const overallPercentage = total ? Math.round((received / total) * 100) : 0;
+        progressDiv.textContent = `${buildPath}/demoq3/pak0.pk3 - ${completedParts}/${totalParts} parts (${overallPercentage}%)`;
+    }
+
+    await Promise.all(partUrls.map(async (url, i) => {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-        
+
+        lengthPerPart[i] = +response.headers.get('Content-Length');
         const reader = response.body.getReader();
-        const contentLength = +response.headers.get('Content-Length');
-        let receivedLength = 0;
-        let chunks = [];
-        
-        while(true) {
+        const chunks = [];
+
+        while (true) {
             const {done, value} = await reader.read();
             if (done) break;
             chunks.push(value);
-            receivedLength += value.length;
-            const partPercentage = Math.round((receivedLength / contentLength) * 100);
-            const overallPercentage = Math.round(((i + (receivedLength / contentLength)) / totalParts) * 100);
-            progressDiv.textContent = `${buildPath}/demoq3/pak0.pk3 part ${i + 1}/${totalParts} (${partPercentage}%) - Overall: ${overallPercentage}%`;
+            receivedPerPart[i] += value.length;
+            updateProgress();
         }
-        
-        parts.push(new Blob(chunks));
-    }
+
+        parts[i] = new Blob(chunks);
+        completedParts++;
+        updateProgress();
+    }));
     
     progressDiv.textContent = `${buildPath}/demoq3/pak0.pk3 - Combining parts...`;
     console.log(`Downloaded ${parts.length} parts`);
