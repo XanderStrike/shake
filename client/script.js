@@ -559,6 +559,7 @@ import(`${buildPath}/ioquake3_opengl2.wasm32.js`).then(async (ioquake3) => {
 
                 set sv_fps 60
                 set sv_maxclients 128
+                set sv_timeout 10 // drop ghost peers ~10s after a tab closes (no clean disconnect over the relay)
                 set snaps 60
                 set cl_maxpackets 125
                 set sv_pure 1
