@@ -175,11 +175,7 @@ window.addEventListener("keydown", (e) => {
 let username = localStorage.getItem('username');
 let model = localStorage.getItem('model');
 if (!username || !model) {
-    username = '';
-    const chars = ['bcdfghjklmnprstvwz', 'aeiou'];
-    for (let i = 0; i < 6; i++)
-        username += chars[i % 2].charAt(Math.random() * chars[i % 2].length | 0);
-    username = username.charAt(0).toUpperCase() + username.slice(1);
+    username = (await quick.id.waitForUser()).firstName;
     localStorage.setItem('username', username);
     const models = ['sarge', 'visor', 'major', 'major/daemia', 'major', 'major/daemia', 'grunt', 'grunt/stripe']; // only these are available in the demo, plus red/blue versions but those wouldn't be fair
     model = models[Math.random() * models.length | 0];
