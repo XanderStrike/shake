@@ -1,13 +1,6 @@
-version: '3.8'
-
 services:
-  shake-client:
-    image: xanderstrike/shake-client:latest
-    container_name: shake-client
+  shake:
+    build: .
+    container_name: shake
     ports:
-      - "8081:80"
-  shake-server:
-    image: xanderstrike/shake-server:latest
-    container_name: shake-server
-    ports:
-      - "8080:8080"
+      - "8081:8080"
