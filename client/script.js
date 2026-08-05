@@ -1,8 +1,9 @@
 
-let peerServer = "s://shake-peerserver.astandke.com";
-
-const peerServerWebSocket = `ws${peerServer}`;
-const peerServerHTTP = `http${peerServer}`;
+// The relay lives at /ws on the same origin as the page, so the whole app
+// (static assets + websocket relay + /lookup) can be served and reverse-proxied
+// as one unit.
+const peerServerWebSocket = (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host + '/ws';
+const peerServerHTTP = location.origin;
 
 // HACK: prevent the browser from queueing too many frames. Defeat pipelineing by calling readPixels() after each frame.
 // This synchronizes the content process and the GPU process. We don't want to delay finished frames, so we do this just after
