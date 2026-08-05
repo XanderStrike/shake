@@ -61,7 +61,10 @@ type Relay struct {
 	peers     map[uint32]*Peer
 	aliases   map[string]*Peer
 	hashAlias map[uint32]*Peer
-	nextID    uint32
+	// aliasMap holds the map each lobby's host is running, announced via
+	// POST /lookup/{name} so joiners know which pk3 to fetch before connecting.
+	aliasMap map[string]string
+	nextID   uint32
 }
 
 func NewRelay() *Relay {
@@ -69,6 +72,7 @@ func NewRelay() *Relay {
 		peers:     make(map[uint32]*Peer),
 		aliases:   make(map[string]*Peer),
 		hashAlias: make(map[uint32]*Peer),
+		aliasMap:  make(map[string]string),
 		nextID:    1,
 	}
 }
@@ -95,11 +99,12 @@ func (r *Relay) register(conn *websocket.Conn) *Peer {
 func (r *Relay) unregister(p *Peer) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	// drop any aliases owned by this peer
+	// drop any aliases (and their announced map) owned by this peer
 	for name, owner := range r.aliases {
 		if owner == p {
 			delete(r.aliases, name)
 			delete(r.hashAlias, fnv1a(name))
+			delete(r.aliasMap, name)
 		}
 	}
 	delete(r.peers, p.id)
@@ -232,11 +237,46 @@ func (r *Relay) serveWS(w http.ResponseWriter, req *http.Request) {
 func (r *Relay) serveLookup(w http.ResponseWriter, req *http.Request) {
 	name := strings.TrimPrefix(req.URL.Path, "/lookup/")
 	name = strings.Trim(name, "/")
-	r.mu.Lock()
-	found := name != "" && r.aliases[name] != nil
-	r.mu.Unlock()
-	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]bool{"found": found})
+	if name == "" {
+		http.Error(w, "missing name", http.StatusBadRequest)
+		return
+	}
+
+	switch req.Method {
+	case http.MethodGet:
+		r.mu.Lock()
+		found := r.aliases[name] != nil
+		mp := r.aliasMap[name]
+		r.mu.Unlock()
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(struct {
+			Found bool   `json:"found"`
+			Map   string `json:"map"`
+		}{Found: found, Map: mp})
+
+	case http.MethodPost:
+		// A host announces which map its lobby is running so joiners can fetch
+		// the right pk3 before connecting. Stored by lobby name; cleared when the
+		// host peer disconnects (see unregister).
+		var body struct {
+			Map string `json:"map"`
+		}
+		if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
+			http.Error(w, "bad body", http.StatusBadRequest)
+			return
+		}
+		r.mu.Lock()
+		r.aliasMap[name] = body.Map
+		r.mu.Unlock()
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(struct {
+			OK bool `json:"ok"`
+		}{OK: true})
+
+	default:
+		w.Header().Set("Allow", "GET, POST")
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
 }
 
 func main() {

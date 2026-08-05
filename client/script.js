@@ -230,7 +230,13 @@ let connectToServer = new Promise(r => decideConnectToServer = r);
 if (server) {
     // sanitize to hopefully avoid command injection in autoexec.cfg
     server = server.replace(/"/g, '');
-    fetch(`${peerServerHTTP}/lookup/${server}`).then(r => r.json()).then((r) => decideConnectToServer(r.found)).catch(() => { decideConnectToServer(false); });
+    fetch(`${peerServerHTTP}/lookup/${server}`)
+        .then(r => r.json())
+        .then((r) => decideConnectToServer(r))
+        .catch(() => { decideConnectToServer({ found: false }); });
+} else {
+    // lonely/bot mode: no lobby to look up
+    decideConnectToServer({ found: false });
 }
 
 let buildPath = '.';
@@ -283,12 +289,26 @@ for (let i = 0; i <= 8; i++) {
     fetchAndCacheFile(`${buildPath}/demoq3/pak${i}.pk3`, 'demoq3-cache', gotDemoq3Pak[i])();
 }
 
+// The custom map pk3 to download is only known once /lookup resolves:
+// a joiner uses the map the host announced, a host uses its own ?map= and
+// announces it so joiners can fetch it. (Lonely mode resolves immediately.)
 var customMap;
-if (map) {
-    let gotcustomMap;
-    customMap = new Promise(r => gotcustomMap = r);
+let gotcustomMap;
+customMap = new Promise(r => gotcustomMap = r);
+connectToServer.then((r) => {
+    if (r && r.found && r.map) {
+        // join the game the host is actually running, not whatever ?map= says
+        map = r.map;
+    } else if (server) {
+        // we're the host: tell the relay which map this lobby is running
+        fetch(`${peerServerHTTP}/lookup/${server}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ map }),
+        }).catch(() => {});
+    }
     fetchAndCacheFile(`${buildPath}/demoq3/${map}.pk3`, 'demoq3-cache', gotcustomMap)();
-}
+});
 
 // Fool Emscripten into thinking the browser supports pointer lock.
 if (!document.body.requestPointerLock) document.body.requestPointerLock = () => true;
@@ -383,7 +403,7 @@ import(`${buildPath}/ioquake3_opengl2.wasm32.js`).then(async (ioquake3) => {
                 module.FS.writeFile(`/demoq3/${map}.pk3`, await customMap);
             }
             if (multiplayer) {
-                if (await connectToServer) {
+                if ((await connectToServer).found) {
                     module.arguments.push(...`
                         +set net_peer_server "${peerServerWebSocket}"
                         +connect "${server}.humblenet"
