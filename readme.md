@@ -4,7 +4,7 @@ host your own web-based quake lan party.
 
 ## running
 
-download the [docker-compose.yml](https://raw.githubusercontent.com/xanderstrike/shake/main/docker-compose.yml) and run `docker compose up`.
+clone the repo and run `docker compose up`.
 
 visit <server-ip>:8081 and play.
 
